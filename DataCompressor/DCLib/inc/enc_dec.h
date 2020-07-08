@@ -5,6 +5,11 @@
 #ifndef _ENC_DEC_H
 #define _ENC_DEC_H
 
+#define DATATYPE_OPTION_COMPATIBILITY_DEFAULT 0 /* behaviour before datatype option */
+#define DATATYPE_OPTION_UINT 1
+#define DATATYPE_OPTION_INT 2
+#define DATATYPE_OPTION_FLOAT 3
+
 #include "bit_file_buffer.h"
 
 typedef struct options_t options_t; /* Forward declaration for settings parameter type */
@@ -38,6 +43,10 @@ struct options_t
   size_t num_decimal_places;
   float normalization_factor;
   size_t num_values;
+  size_t output_datatype;
+  size_t ignore_bits;
+  size_t input_datatype;
+  size_t num_phases;
 };
 
 size_t GetNumberOfEncoders(void);

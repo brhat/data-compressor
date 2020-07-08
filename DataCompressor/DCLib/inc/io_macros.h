@@ -64,6 +64,12 @@
     LOG_ON_ERROR_AND_RETURN(ret, (num_bits), (error_log_file), 1); \
   } \
 }
+#define READ_SIGNED_VALUE_BITS_CHECKED(bits, num_bits, in_bit_buf, error_log_file) { \
+  { \
+    io_int_t ret = ReadSignedSingleValueFromBitFileBuffer((in_bit_buf), (bits), (num_bits)); \
+    LOG_ON_ERROR_AND_RETURN(ret, (num_bits), (error_log_file), 1); \
+  } \
+}
 
 #define WRITE_BITS_CHECKED(bits, num_bits, out_bit_buf, error_log_file) { \
   { \
@@ -82,6 +88,12 @@
 #define WRITE_VALUE_BITS_CHECKED(bits, num_bits, out_bit_buf, error_log_file) { \
   { \
     io_int_t ret = WriteSingleValueToBitFileBuffer((out_bit_buf), (bits), (num_bits)); \
+    LOG_ON_ERROR_AND_RETURN(ret, (num_bits), (error_log_file), 0); \
+  } \
+}
+#define WRITE_SIGNED_VALUE_BITS_CHECKED(bits, num_bits, out_bit_buf, error_log_file) { \
+  { \
+    io_int_t ret = WriteSignedSingleValueToBitFileBuffer((out_bit_buf), (bits), (num_bits)); \
     LOG_ON_ERROR_AND_RETURN(ret, (num_bits), (error_log_file), 0); \
   } \
 }

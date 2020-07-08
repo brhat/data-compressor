@@ -26,7 +26,11 @@ typedef enum option_t
   OPTION_SEPARATOR_CHAR = 1 << 4,
   OPTION_NORMALIZATION_FACTOR = 1 << 5,
   OPTION_NUM_DECIMAL_PLACES = 1 << 6,
-  OPTION_NUM_VALUES = 1 << 7
+  OPTION_NUM_VALUES = 1 << 7,
+  OPTION_OUTPUT_DATATYPE = 1 << 8,
+  OPTION_IGNORE_BITS = 1 << 9,
+  OPTION_INPUT_DATATYPE = 1 << 10,
+  OPTION_NUM_PHASES = 1 << 11
 } option_t;
 
 typedef struct named_enc_dec_t
@@ -52,10 +56,10 @@ static const named_enc_dec_t encoders_decoders[] = { /* Note: This array needs t
   { "aggregate", "Sums up values", { &Aggregate, NULL }, OPTION_NUM_VALUES }, /* No decoder! */
   { "bac", "Binary arithmetic coding", { &EncodeBAC, &DecodeBAC }, OPTION_ADAPTIVE },
   { "copy", "Copies input to output", { &Copy, &Copy }, OPTION_BLOCK_SIZE_BITS },
-  { "csv", "Comma-separated values", { &WriteCSV, &ReadCSV }, OPTION_COLUMN | OPTION_SEPARATOR_CHAR | OPTION_NUM_DECIMAL_PLACES },
-  { "diff", "Differential coding", { &EncodeDifferential, &DecodeDifferential }, OPTION_VALUE_SIZE_BITS },
+  { "csv", "Comma-separated values", { &WriteCSV, &ReadCSV }, OPTION_COLUMN | OPTION_SEPARATOR_CHAR | OPTION_NUM_DECIMAL_PLACES | OPTION_OUTPUT_DATATYPE | OPTION_INPUT_DATATYPE | OPTION_VALUE_SIZE_BITS},
+  { "diff", "Differential coding", { &EncodeDifferential, &DecodeDifferential }, OPTION_VALUE_SIZE_BITS | OPTION_OUTPUT_DATATYPE | OPTION_INPUT_DATATYPE | OPTION_NUM_PHASES },
   { "lzmh", "LZMH coding", { &EncodeLZMH, &DecodeLZMH }, NO_OPTIONS },
-  { "normalize", "(De-)normalization", { &Normalize, &Denormalize }, OPTION_NORMALIZATION_FACTOR | OPTION_VALUE_SIZE_BITS },
+  { "normalize", "(De-)normalization", { &Normalize, &Denormalize }, OPTION_NORMALIZATION_FACTOR | OPTION_VALUE_SIZE_BITS | OPTION_OUTPUT_DATATYPE | OPTION_INPUT_DATATYPE | OPTION_IGNORE_BITS },
   { "seg", "Signed Exponential Golomb coding", { &EncodeSEG, &DecodeSEG }, OPTION_VALUE_SIZE_BITS }
 };
 
@@ -65,9 +69,13 @@ static const option_description_t option_descriptions[] = { /* Note: This array 
   { "adaptive", OPTION_ADAPTIVE, "Perform adaptive arithmetic coding", OT_BOOL, 0, 1, offsetof(options_t, adaptive) },
   { "blocksize", OPTION_BLOCK_SIZE_BITS, "Use blocks of <n> bits size for I/O", OT_SIZE, 1, SIZE_MAX, offsetof(options_t, block_size_bits) },
   { "column", OPTION_COLUMN, "Use column <n>", OT_SIZE, 1, SIZE_MAX, offsetof(options_t, column) },
+  { "ignore_bits", OPTION_IGNORE_BITS, "Use <n> to specify the number of ignored bits", OT_SIZE, 0, IO_SIZE_BITS, offsetof(options_t, ignore_bits) }, /* TODO: specify max bits */
+  { "input_datatype", OPTION_INPUT_DATATYPE, "Use <n> to specify input-datatype. 0=old default, 1=uint,2=int,3=float", OT_SIZE, 0, 2, offsetof(options_t, input_datatype) },
   { "normalization_factor", OPTION_NORMALIZATION_FACTOR, "Use multiplier <n> for normalization and <1/n> for denormalization", OT_FLOAT, 0, SIZE_MAX, offsetof(options_t, normalization_factor) },
   { "num_decimal_places", OPTION_NUM_DECIMAL_PLACES, "Use <n> decimal places to print floats into CSV files", OT_SIZE, 0, 6, offsetof(options_t, num_decimal_places) },
+  { "num_phases", OPTION_NUM_PHASES, "Use <n> phases", OT_SIZE, 1, SIZE_MAX, offsetof(options_t, num_phases) },
   { "num_values", OPTION_NUM_VALUES, "Use <n> values for aggregation", OT_SIZE, 0, SIZE_MAX, offsetof(options_t, num_values) },
+  { "output_datatype", OPTION_OUTPUT_DATATYPE, "Use <n> to specify output-datatype. 0=old default,1=uint,2=int,3=float", OT_SIZE, 0, 2, offsetof(options_t, output_datatype) },
   { "separator_char", OPTION_SEPARATOR_CHAR, "Use <n> as CSV entry separator", OT_CHAR, 0, CHAR_MAX, offsetof(options_t, separator_char) },
   { "valuesize", OPTION_VALUE_SIZE_BITS, "Use values of <n> bits size", OT_SIZE, 1, IO_SIZE_BITS, offsetof(options_t, value_size_bits) }
 };
@@ -194,7 +202,12 @@ void SetDefaultOptions(options_t * const options)
   options->separator_char = ','; /* Comma-separated values */
   options->value_size_bits = 32; /* 32-bit values (TODO: reduce when MAX_USABLE_SIZE is < 1<<32 - 1) */
   options->num_values = 2; /* Sum up two consecutive values */
+  options->output_datatype = DATATYPE_OPTION_COMPATIBILITY_DEFAULT; /* output-datatype */
+  options->ignore_bits = 0; /* bits ignored by normalize */
+  options->input_datatype = DATATYPE_OPTION_COMPATIBILITY_DEFAULT; /* input-datatype */
+  options->num_phases = 1; /* phases processed in diff */
 }
+
 
 static int EncoderSupportsOptionInternal(const named_enc_dec_t * const encoder, const option_t option)
 {

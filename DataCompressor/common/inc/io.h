@@ -35,12 +35,14 @@
   #endif
   #define IO_ABS(x) llabs((x))
   #define IO_STRTOUL(str, endptr, base) strtoull((str), (endptr), (base))
+  #define IO_STRTOLL(str, endptr, base) strtoll((str), (endptr), (base))
 #else /* IO_SIZE_BITS <= 32 */
   #define IO_ABS(x) labs(x)
   #define IO_STRTOUL(str, endptr, base) strtoul((str), (endptr), (base))
   #define FTELL(f) ftell((f))
   #define FSEEK(f, off, orig) fseek((f), (off), (orig))
   #define FOPEN(f, m) fopen((f), (m))
+  #define IO_STRTOLL(str, endptr, base) strtoll((str), (endptr), (base))
 #endif
 
 #include <stdio.h>

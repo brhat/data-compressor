@@ -276,8 +276,26 @@ io_int_t WriteBitFileBuffer(bit_file_buffer_t * const bit_file_buffer, const uin
 #define MAX_SIZE (sizeof(io_uint_t))
 #define MAX_BIT_SIZE (8 * MAX_SIZE)
 
+#define READ_SINGLE_VALUE_FROM_BIT_FILE_BUFFER \
+{ \
+}
 /* TODO: Optimize */
 io_int_t ReadSingleValueFromBitFileBuffer(bit_file_buffer_t * const bit_file_buffer, io_uint_t * const value, const size_t value_bit_size)
+{
+  io_int_t ret;
+  uint8_t bytes[MAX_SIZE];
+  size_t i;
+  if (value_bit_size > MAX_BIT_SIZE)
+    return ERROR_INVALID_VALUE;
+  if ((ret = ReadBitFileBuffer(bit_file_buffer, bytes, value_bit_size)) != (io_int_t)value_bit_size)
+    return ret;
+  *value = 0;
+  for (i = 0; i < (value_bit_size + 7) / 8; i++)
+    *value |= (io_int_t)bytes[i] << (MAX_BIT_SIZE - 8 - 8 * i);
+  *value >>= (MAX_BIT_SIZE - value_bit_size);
+  return value_bit_size;
+}
+io_int_t ReadSignedSingleValueFromBitFileBuffer(bit_file_buffer_t * const bit_file_buffer, io_int_t * const value, const size_t value_bit_size)
 {
   io_int_t ret;
   uint8_t bytes[MAX_SIZE];
@@ -295,6 +313,19 @@ io_int_t ReadSingleValueFromBitFileBuffer(bit_file_buffer_t * const bit_file_buf
 
 /* TODO: Optimize */
 io_int_t WriteSingleValueToBitFileBuffer(bit_file_buffer_t * const bit_file_buffer, const io_uint_t * const value, const size_t value_bit_size)
+{
+  const io_uint_t temp_value = *value << (MAX_BIT_SIZE - value_bit_size);
+  uint8_t bytes[MAX_SIZE];
+  size_t i;
+  if (value_bit_size > MAX_BIT_SIZE)
+    return ERROR_INVALID_VALUE;
+  bytes[0] = (uint8_t)(temp_value >> (MAX_BIT_SIZE - 8)); /* Treat first byte separately to avoid shifting by 64 below */
+  for (i = 1; i < (value_bit_size + 7) / 8; i++)
+    bytes[i] = (temp_value & (((io_uint_t)1 << (MAX_BIT_SIZE - 8 * i)) - 1)) >> (MAX_BIT_SIZE - 8 - 8 * i);
+  return WriteBitFileBuffer(bit_file_buffer, bytes, value_bit_size);
+}
+
+io_int_t WriteSignedSingleValueToBitFileBuffer(bit_file_buffer_t * const bit_file_buffer, const io_int_t * const value, const size_t value_bit_size)
 {
   const io_uint_t temp_value = *value << (MAX_BIT_SIZE - value_bit_size);
   uint8_t bytes[MAX_SIZE];
@@ -339,7 +370,7 @@ int ClearBitFileBuffer(bit_file_buffer_t * const bit_file_buffer)
     return ret;
   ResetBufferByte(bit_file_buffer);
   return NO_ERROR;
-} 
+}
 
 int ResetBitFileBuffer(bit_file_buffer_t * const bit_file_buffer, const file_buffer_mode_t mode)
 {

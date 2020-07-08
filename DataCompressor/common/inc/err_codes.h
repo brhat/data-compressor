@@ -13,9 +13,12 @@
 #define ERROR_INVALID_MODE -4
 #define ERROR_FILE_IO -5
 #define ERROR_MEMORY -6
+#define ERROR_DATATYPE -7
+#define ERROR_PHASE -8
+#define ERROR_MALLOC -9
 
 #define MAX_COMMON_ERROR NO_ERROR
-#define MIN_COMMON_ERROR ERROR_MEMORY
+#define MIN_COMMON_ERROR ERROR_MALLOC
 
 static const char * const _common_error_messages[] = { "Successful",
                                                        "Invalid value",
@@ -23,7 +26,10 @@ static const char * const _common_error_messages[] = { "Successful",
                                                        "Invalid format",
                                                        "Invalid mode",
                                                        "File I/O error",
-                                                       "Memory error" };
+                                                       "Memory error",
+                                                       "Unsupported datatype / combination",
+                                                       "Not enogh data for all phases"
+                                                       "Malloc failed"};
 
 #define ERROR_LIBRARY_INIT -10
 #define ERROR_LIBRARY_CALL -11

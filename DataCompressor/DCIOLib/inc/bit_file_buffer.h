@@ -25,7 +25,9 @@ io_int_t ReadBitFileBuffer(bit_file_buffer_t * const bit_file_buffer, uint8_t * 
 io_int_t WriteBitFileBuffer(bit_file_buffer_t * const bit_file_buffer, const uint8_t * const input, const size_t input_bit_size);
 
 io_int_t ReadSingleValueFromBitFileBuffer(bit_file_buffer_t * const bit_file_buffer, io_uint_t * const value, const size_t value_bit_size);
+io_int_t ReadSignedSingleValueFromBitFileBuffer(bit_file_buffer_t * const bit_file_buffer, io_int_t * const value, const size_t value_bit_size);
 io_int_t WriteSingleValueToBitFileBuffer(bit_file_buffer_t * const bit_file_buffer, const io_uint_t * const value, const size_t value_bit_size);
+io_int_t WriteSignedSingleValueToBitFileBuffer(bit_file_buffer_t * const bit_file_buffer, const io_int_t * const value, const size_t value_bit_size);
 
 int FlushBitFileBuffer(bit_file_buffer_t * const bit_file_buffer);
 
